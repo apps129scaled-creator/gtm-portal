@@ -133,6 +133,14 @@
   .row > :first-child { flex: 1; min-width: 0; }
   .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; cursor: pointer; }
   .check input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex: none; }
+  .field-label { display: block; font-weight: 550; font-size: 14px; margin-bottom: 6px; }
+  .seg { display: inline-flex; padding: 3px; gap: 3px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; margin: 0; min-width: 0; align-self: flex-start; }
+  .seg legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .seg label { position: relative; }
+  .seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .seg span { display: block; padding: 6px 14px; border-radius: 6px; font-weight: 550; font-size: 14px; color: var(--muted); }
+  .seg input:checked + span { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
   .or { text-align: center; color: var(--muted); font-size: 13px; margin: -4px 0; }
 
   button.btn {
@@ -232,6 +240,7 @@
     <button type="button" role="tab" id="tab-upload" aria-controls="panel-upload" data-tab="upload">Upload</button>
     <button type="button" role="tab" id="tab-pull" aria-controls="panel-pull" data-tab="pull">Pull by client</button>
     <button type="button" role="tab" id="tab-domains" aria-controls="panel-domains" data-tab="domains">Pull by domains</button>
+    <button type="button" role="tab" id="tab-lookup" aria-controls="panel-lookup" data-tab="lookup">Lookup</button>
     <button type="button" role="tab" id="tab-catalog" aria-controls="panel-catalog" data-tab="catalog">Catalog</button>
   </nav>
 
@@ -342,7 +351,39 @@
     </form>
   </section>
 
-  <!-- 4. Catalog -->
+  <!-- 4. Lookup -->
+  <section class="card" role="tabpanel" id="panel-lookup" aria-labelledby="tab-lookup" hidden>
+    <h2>Lookup</h2>
+    <p class="lead">Paste or upload LinkedIn URLs (or emails) to get the safe emails we already have. Output keeps your row order.</p>
+    <form id="lookForm" novalidate>
+      <div class="grid">
+        <div class="field full">
+          <span class="field-label" aria-hidden="true">Look up by</span>
+          <fieldset class="seg">
+            <legend>Look up by</legend>
+            <label><input type="radio" name="lookBy" value="linkedin" checked><span>LinkedIn URL</span></label>
+            <label><input type="radio" name="lookBy" value="email"><span>Email</span></label>
+          </fieldset>
+        </div>
+        <label class="field full">CSV file
+          <input type="file" id="lookFile" accept=".csv,text/csv,.txt">
+          <span class="hint" id="lookFileHint">The LinkedIn URL column is found automatically.</span>
+        </label>
+        <div class="or full">or</div>
+        <label class="field full">Paste values
+          <textarea id="lookText" spellcheck="false"></textarea>
+          <span class="hint">One per line. Ignored if a file is chosen.</span>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn" id="lookBtn"><span class="spinner"></span><span>Download CSV</span></button>
+      </div>
+      <div class="msg" id="lookMsg" role="status" aria-live="polite"></div>
+      <div id="lookStats"></div>
+    </form>
+  </section>
+
+  <!-- 5. Catalog -->
   <section class="card" role="tabpanel" id="panel-catalog" aria-labelledby="tab-catalog" hidden>
     <h2>Catalog</h2>
     <p class="lead">Every client list in the warehouse. Loaded once per session; refresh to fetch the latest.</p>
@@ -1043,6 +1084,62 @@
       $("domStats").replaceChildren(stats);
     } catch (err) {
       setMsg(msg, "err", "<strong>Pull failed:</strong> " + esc(err.message));
+    } finally {
+      setBusy(btn, false);
+    }
+  });
+
+  // ---------- lookup ----------
+  const LOOK_BY = {
+    linkedin: { hint: "The LinkedIn URL column is found automatically.", placeholder: "https://www.linkedin.com/in/jane-doe\nhttps://www.linkedin.com/in/john-smith" },
+    email: { hint: "The email column is found automatically.", placeholder: "jane@acme.com\njohn@globex.io" },
+  };
+  const lookBy = () => document.querySelector('input[name="lookBy"]:checked').value;
+  function onLookByChange() {
+    const cfg = LOOK_BY[lookBy()];
+    $("lookFileHint").textContent = cfg.hint;
+    $("lookText").placeholder = cfg.placeholder;
+  }
+  document.querySelectorAll('input[name="lookBy"]').forEach((r) => r.addEventListener("change", onLookByChange));
+  onLookByChange();
+  $("lookFile").addEventListener("change", () => {
+    $("lookText").disabled = !!$("lookFile").files[0];
+  });
+
+  $("lookForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = $("lookMsg");
+    const file = $("lookFile").files[0];
+    const text = $("lookText").value;
+    const by = lookBy();
+    if (!file && !text.trim()) return setMsg(msg, "err", by === "email" ? "Choose a CSV or paste some emails." : "Choose a CSV or paste some LinkedIn URLs.");
+
+    const fd = new FormData();
+    fd.append("by", by);
+    if (file) fd.append("file", file, file.name);
+    else fd.append("values", text);
+
+    const btn = $("lookBtn");
+    setBusy(btn, true);
+    setMsg(msg, "info", "Looking up…");
+    $("lookStats").replaceChildren();
+    try {
+      const res = await api("/lookup", { method: "POST", body: fd });
+      const blob = await res.blob();
+      const name = filenameFrom(res, `lookup_by_${by}.csv`);
+      const rows = headerNum(res, "x-row-count");
+      const found = headerNum(res, "x-found-count");
+      saveBlob(blob, name);
+      setMsg(msg, found === 0 ? "warn" : "ok", `<strong>Downloaded</strong> ${esc(name)}` +
+        (found === 0 ? "<br>None of these were found in the warehouse." : ""));
+      if (found != null && rows != null) {
+        const stats = document.createElement("div");
+        stats.className = "stats";
+        stats.innerHTML = `<div class="stat"><div class="v">${fmt(found)} <span class="muted" style="font-size:15px;font-weight:500">of ${fmt(rows)}</span></div><div class="k">found</div></div>`;
+        $("lookStats").replaceChildren(stats);
+      }
+    } catch (err) {
+      setMsg(msg, "err", "<strong>Lookup failed:</strong> " + esc(err.message));
     } finally {
       setBusy(btn, false);
     }
