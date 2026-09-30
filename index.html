@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>GTM Leads Portal</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #f0f2f5;
+    --border: #dde1e7;
+    --text: #1b1f24;
+    --muted: #5d6673;
+    --accent: #2f5bea;
+    --accent-hover: #2449c4;
+    --accent-text: #ffffff;
+    --accent-soft: #e8eefd;
+    --ok: #17803d;
+    --ok-soft: #e6f5ec;
+    --err: #b42318;
+    --err-soft: #fdecea;
+    --warn-soft: #fff6e0;
+    --warn: #8a5a00;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0f1216;
+      --surface: #171b21;
+      --surface-2: #1f242c;
+      --border: #2d333d;
+      --text: #e6e9ee;
+      --muted: #9aa3af;
+      --accent: #6e8fff;
+      --accent-hover: #8aa4ff;
+      --accent-text: #0d1117;
+      --accent-soft: #1c2640;
+      --ok: #4ccb7b;
+      --ok-soft: #13291c;
+      --err: #ff7b72;
+      --err-soft: #3a1714;
+      --warn-soft: #33290f;
+      --warn: #e8b64c;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0f1216;
+    --surface: #171b21;
+    --surface-2: #1f242c;
+    --border: #2d333d;
+    --text: #e6e9ee;
+    --muted: #9aa3af;
+    --accent: #6e8fff;
+    --accent-hover: #8aa4ff;
+    --accent-text: #0d1117;
+    --accent-soft: #1c2640;
+    --ok: #4ccb7b;
+    --ok-soft: #13291c;
+    --err: #ff7b72;
+    --err-soft: #3a1714;
+    --warn-soft: #33290f;
+    --warn: #e8b64c;
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+  header.top {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  header.top .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; padding-top: 12px; padding-bottom: 12px;
+  }
+  .brand { font-weight: 650; font-size: 17px; letter-spacing: -.01em; }
+  .who { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; flex-wrap: wrap; }
+  .who strong { color: var(--text); font-weight: 600; }
+
+  nav.tabs {
+    display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none;
+    margin: 16px 0; padding: 4px; background: var(--surface-2);
+    border-radius: var(--radius); border: 1px solid var(--border);
+  }
+  nav.tabs::-webkit-scrollbar { display: none; }
+  nav.tabs button {
+    flex: 1 0 auto; border: 0; background: transparent; color: var(--muted);
+    padding: 8px 14px; border-radius: 7px; font: inherit; font-weight: 550; cursor: pointer; white-space: nowrap;
+  }
+  nav.tabs button[aria-selected="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+  nav.tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 20px; margin-bottom: 24px;
+  }
+  .card h2 { margin: 0 0 4px; font-size: 18px; }
+  .card > p.lead { margin: 0 0 18px; color: var(--muted); }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+  .grid .full { grid-column: 1 / -1; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } .card { padding: 16px; } }
+
+  label.field { display: flex; flex-direction: column; gap: 6px; font-weight: 550; font-size: 14px; min-width: 0; }
+  .hint { color: var(--muted); font-weight: 400; font-size: 13px; }
+  input[type="text"], input[type="password"], input[type="number"], input[type="search"], select, textarea {
+    width: 100%; font: inherit; color: var(--text); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; min-height: 40px;
+  }
+  textarea { min-height: 110px; resize: vertical; font-family: var(--mono); font-size: 13px; }
+  input[type="file"] {
+    width: 100%; font: inherit; font-size: 14px; color: var(--muted);
+    border: 1px dashed var(--border); border-radius: 8px; padding: 10px; background: var(--surface-2);
+  }
+  input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > :first-child { flex: 1; min-width: 0; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; cursor: pointer; }
+  .check input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex: none; }
+  .or { text-align: center; color: var(--muted); font-size: 13px; margin: -4px 0; }
+
+  button.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font: inherit; font-weight: 600; border-radius: 8px; padding: 9px 16px; min-height: 40px;
+    border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+    background: var(--accent); color: var(--accent-text);
+  }
+  button.btn:hover:not(:disabled) { background: var(--accent-hover); }
+  button.btn.secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+  button.btn.secondary:hover:not(:disabled) { background: var(--surface-2); }
+  button.btn.small { padding: 5px 10px; min-height: 32px; font-size: 13px; }
+  button.btn:disabled { opacity: .55; cursor: not-allowed; }
+  button.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.icon { padding: 0; width: 40px; flex: none; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; align-items: center; }
+
+  .spinner {
+    width: 16px; height: 16px; border-radius: 50%; flex: none;
+    border: 2px solid currentColor; border-right-color: transparent;
+    animation: spin .7s linear infinite; display: none;
+  }
+  .busy .spinner, .spinner.on { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .msg { border-radius: 8px; padding: 10px 14px; margin-top: 16px; font-size: 14px; word-break: break-word; }
+  .msg:empty { display: none; }
+  .msg.err { background: var(--err-soft); color: var(--err); border: 1px solid color-mix(in srgb, var(--err) 30%, transparent); }
+  .msg.ok { background: var(--ok-soft); color: var(--ok); border: 1px solid color-mix(in srgb, var(--ok) 30%, transparent); }
+  .msg.info { background: var(--accent-soft); color: var(--text); border: 1px solid var(--border); }
+  .msg.warn { background: var(--warn-soft); color: var(--warn); border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent); }
+  .msg strong { font-weight: 650; }
+
+  .progress { margin-top: 16px; }
+  .progress[hidden] { display: none; }
+  .bar { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; border: 1px solid var(--border); }
+  .bar > div { height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
+  .bar.indeterminate > div { width: 30%; animation: slide 1.2s ease-in-out infinite; }
+  @keyframes slide { 0% { margin-left: -30%; } 100% { margin-left: 100%; } }
+  .progress .label { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+  .stat { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; min-width: 130px; }
+  .stat .v { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .stat .k { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; margin-top: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: 0; }
+  th { background: var(--surface-2); font-weight: 600; font-size: 13px; white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.sub { padding-left: 28px; color: var(--muted); }
+  table.summary td:first-child { color: var(--text); }
+  table.summary td.k { font-family: var(--mono); font-size: 13px; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--accent); }
+  th .arrow { opacity: .35; margin-left: 4px; font-size: 11px; }
+  th[aria-sort="ascending"] .arrow, th[aria-sort="descending"] .arrow { opacity: 1; color: var(--accent); }
+  #catalogTable td { white-space: nowrap; }
+  #catalogTable td.wrapok { white-space: normal; min-width: 160px; }
+  .muted { color: var(--muted); }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .toolbar input[type="search"] { flex: 1 1 220px; }
+  .count { color: var(--muted); font-size: 13px; }
+
+  .loading { display: flex; align-items: center; gap: 12px; padding: 28px 16px; color: var(--muted); justify-content: center; text-align: center; }
+  .loading .spinner { width: 22px; height: 22px; display: inline-block; color: var(--accent); }
+
+  dialog {
+    border: 1px solid var(--border); border-radius: 14px; padding: 0; width: min(440px, calc(100vw - 32px));
+    background: var(--surface); color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  }
+  dialog::backdrop { background: rgba(10, 14, 20, .55); }
+  dialog form { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+  dialog h2 { margin: 0; font-size: 18px; }
+  dialog p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  [hidden] { display: none !important; }
+  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 8px 16px 28px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">GTM Leads Portal</div>
+    <div class="who">
+      <span id="whoText">Not signed in</span>
+      <button type="button" class="btn secondary small" id="changeKeyBtn">Change key</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button type="button" role="tab" id="tab-upload" aria-controls="panel-upload" data-tab="upload">Upload</button>
+    <button type="button" role="tab" id="tab-pull" aria-controls="panel-pull" data-tab="pull">Pull by client</button>
+    <button type="button" role="tab" id="tab-domains" aria-controls="panel-domains" data-tab="domains">Pull by domains</button>
+    <button type="button" role="tab" id="tab-catalog" aria-controls="panel-catalog" data-tab="catalog">Catalog</button>
+  </nav>
+
+  <!-- 1. Upload -->
+  <section class="card" role="tabpanel" id="panel-upload" aria-labelledby="tab-upload">
+    <h2>Upload leads</h2>
+    <p class="lead">Add a CSV of leads to a client list. Files over 25,000 rows are split and uploaded in parts automatically.</p>
+    <form id="uploadForm" novalidate>
+      <div class="grid">
+        <label class="field full">CSV file
+          <input type="file" id="upFile" accept=".csv,text/csv" required>
+          <span class="hint" id="upFileInfo"></span>
+        </label>
+        <div class="field">
+          <label class="field" for="upClient">Client</label>
+          <div class="row">
+            <select id="upClient" data-clients data-allow-new></select>
+            <button type="button" class="btn secondary icon" data-refresh-catalog title="Refresh clients and lists" aria-label="Refresh clients and lists">&#x21bb;</button>
+          </div>
+          <input type="text" id="upClientNew" placeholder="New client name" hidden autocomplete="off">
+        </div>
+        <label class="field">List name
+          <input type="text" id="upList" placeholder="e.g. CFOs - Sales Nav - Sep 2026" autocomplete="off" list="upListSuggest">
+          <datalist id="upListSuggest"></datalist>
+          <span class="hint">Format: audience - source - month</span>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn" id="upBtn"><span class="spinner"></span><span>Upload</span></button>
+        <button type="button" class="btn secondary" id="upResume" hidden><span class="spinner"></span><span>Retry remaining parts</span></button>
+      </div>
+      <div class="progress" id="upProgress" hidden>
+        <div class="bar"><div></div></div>
+        <div class="label"></div>
+      </div>
+      <div class="msg" id="upMsg" role="status" aria-live="polite"></div>
+      <div id="upResult"></div>
+    </form>
+  </section>
+
+  <!-- 2. Pull by client -->
+  <section class="card" role="tabpanel" id="panel-pull" aria-labelledby="tab-pull" hidden>
+    <h2>Pull by client</h2>
+    <p class="lead">Download a client's leads as CSV, optionally narrowed to one list.</p>
+    <form id="pullForm" novalidate>
+      <div class="grid">
+        <div class="field">
+          <label class="field" for="pullClient">Client</label>
+          <div class="row">
+            <select id="pullClient" data-clients></select>
+            <button type="button" class="btn secondary icon" data-refresh-catalog title="Refresh clients and lists" aria-label="Refresh clients and lists">&#x21bb;</button>
+          </div>
+        </div>
+        <label class="field">List <span class="hint">(optional)</span>
+          <select id="pullList"><option value="">All lists</option></select>
+        </label>
+        <label class="field">Type
+          <select id="pullType">
+            <option value="email">Email (sendable emails)</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="generic">Generic emails</option>
+          </select>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn" id="pullBtn"><span class="spinner"></span><span>Download CSV</span></button>
+      </div>
+      <div class="msg" id="pullMsg" role="status" aria-live="polite"></div>
+    </form>
+  </section>
+
+  <!-- 3. Pull by domains -->
+  <section class="card" role="tabpanel" id="panel-domains" aria-labelledby="tab-domains" hidden>
+    <h2>Pull by domains</h2>
+    <p class="lead">Find people and generic emails at a set of company domains.</p>
+    <form id="domForm" novalidate>
+      <div class="grid">
+        <label class="field full">CSV of domains
+          <input type="file" id="domFile" accept=".csv,text/csv,.txt">
+          <span class="hint">Uses the domain / website column, or the first column.</span>
+        </label>
+        <div class="or full">or</div>
+        <label class="field full">Paste domains
+          <textarea id="domText" placeholder="acme.com&#10;globex.io&#10;initech.co.uk" spellcheck="false"></textarea>
+          <span class="hint">One per line, or separated by commas or spaces. Ignored if a file is chosen.</span>
+        </label>
+        <label class="field">Type
+          <select id="domType">
+            <option value="both">Both</option>
+            <option value="people">People</option>
+            <option value="generic">Generic</option>
+          </select>
+        </label>
+        <label class="field">Max per domain <span class="hint">(optional)</span>
+          <input type="number" id="domMax" min="1" step="1" inputmode="numeric" placeholder="No limit">
+        </label>
+        <label class="check full"><input type="checkbox" id="domLiOnly"> <span>Include LinkedIn-only decision makers (no safe email)</span></label>
+        <label class="check full"><input type="checkbox" id="domAllTitles"> <span>All titles, not just decision makers</span></label>
+        <label class="field full">Title keywords <span class="hint">(optional, comma-separated)</span>
+          <input type="text" id="domKeywords" placeholder="e.g. finance, revenue, operations" autocomplete="off">
+        </label>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn" id="domBtn"><span class="spinner"></span><span>Download CSV</span></button>
+      </div>
+      <div class="msg" id="domMsg" role="status" aria-live="polite"></div>
+      <div id="domStats"></div>
+    </form>
+  </section>
+
+  <!-- 4. Catalog -->
+  <section class="card" role="tabpanel" id="panel-catalog" aria-labelledby="tab-catalog" hidden>
+    <h2>Catalog</h2>
+    <p class="lead">Every client list in the warehouse. Loaded once per session; refresh to fetch the latest.</p>
+    <div class="toolbar">
+      <input type="search" id="catSearch" placeholder="Search client, list or source" aria-label="Search catalog">
+      <button type="button" class="btn secondary" data-refresh-catalog id="catRefresh"><span class="spinner"></span><span>Refresh</span></button>
+    </div>
+    <div class="msg" id="catMsg" role="status" aria-live="polite"></div>
+    <div id="catBody"></div>
+  </section>
+</main>
+
+<footer>Keys are stored only in this browser. Nothing here can edit or delete stored leads.</footer>
+
+<dialog id="keyDialog" aria-labelledby="keyTitle">
+  <form id="keyForm" method="dialog" novalidate>
+    <h2 id="keyTitle">Enter your API key</h2>
+    <p>Your personal GTM API key. It is saved in this browser only and sent as a request header.</p>
+    <label class="field">API key
+      <input type="password" id="keyInput" autocomplete="off" spellcheck="false" required>
+    </label>
+    <div class="msg" id="keyMsg"></div>
+    <div class="actions" style="margin-top:4px">
+      <button type="submit" class="btn">Save key</button>
+      <button type="button" class="btn secondary" id="keyCancel">Cancel</button>
+      <button type="button" class="btn secondary" id="keyForget">Forget key</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(() => {
+  "use strict";
+
+  const API = "https://jpozapjxdjvtuedvgrsq.supabase.co/functions/v1/gtm-api";
+  const KEY_STORE = "gtm_api_key";
+  const MAX_ROWS = 25000;
+  const NEW_CLIENT = "__new__";
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n) => typeof n === "number" ? n.toLocaleString() : String(n ?? "");
+
+  // ---------- storage (never logged, never in a URL) ----------
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } },
+    del(k) { try { localStorage.removeItem(k); } catch { /* ignore */ } },
+  };
+  let apiKey = store.get(KEY_STORE) || "";
+
+  // ---------- API ----------
+  class ApiError extends Error {
+    constructor(message, status) { super(message); this.status = status; }
+  }
+
+  async function api(path, opts = {}) {
+    if (!apiKey) { openKeyDialog(); throw new ApiError("No API key set.", 0); }
+    const headers = { "x-api-key": apiKey, ...(opts.headers || {}) };
+    let res;
+    try {
+      res = await fetch(API + path, { ...opts, headers });
+    } catch {
+      throw new ApiError("Network error: could not reach the API. Check your connection and try again.", 0);
+    }
+    if (!res.ok) {
+      let message = `Request failed (HTTP ${res.status}).`;
+      const text = await res.text().catch(() => "");
+      try {
+        const body = JSON.parse(text);
+        if (body && body.error) message = body.error;
+      } catch {
+        if (text) message += " " + text.slice(0, 300);
+      }
+      if (res.status === 401) handleUnauthorized(message);
+      throw new ApiError(message, res.status);
+    }
+    return res;
+  }
+
+  function handleUnauthorized(message) {
+    engineer = "";
+    renderWho();
+    openKeyDialog(message + " Enter a valid key.");
+  }
+
+  // ---------- UI helpers ----------
+  function setMsg(el, kind, html) {
+    el.className = "msg" + (kind ? " " + kind : "");
+    el.innerHTML = html || "";
+  }
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  function setBusy(btn, busy) {
+    btn.disabled = busy;
+    btn.classList.toggle("busy", busy);
+    btn.setAttribute("aria-busy", busy ? "true" : "false");
+  }
+
+  function filenameFrom(res, fallback) {
+    const cd = res.headers.get("content-disposition") || "";
+    const star = /filename\*\s*=\s*(?:UTF-8'')?([^;]+)/i.exec(cd);
+    if (star) { try { return decodeURIComponent(star[1].trim().replace(/^"|"$/g, "")); } catch { /* fall through */ } }
+    const plain = /filename\s*=\s*"?([^";]+)"?/i.exec(cd);
+    return plain ? plain[1].trim() : fallback;
+  }
+
+  function saveBlob(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
+  const headerNum = (res, name) => {
+    const v = res.headers.get(name);
+    return v == null || v === "" ? null : Number(v);
+  };
+
+  // ---------- tabs ----------
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  function showTab(name, focus) {
+    tabs.forEach((t) => {
+      const on = t.dataset.tab === name;
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      t.tabIndex = on ? 0 : -1;
+      $("panel-" + t.dataset.tab).hidden = !on;
+      if (on && focus) t.focus();
+    });
+    store.set("gtm_tab", name);
+    if (name === "catalog") loadCatalog(false).catch(() => {});
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener("click", () => showTab(t.dataset.tab));
+    t.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      const next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+      showTab(next.dataset.tab, true);
+    });
+  });
+
+  // ---------- key dialog ----------
+  const keyDialog = $("keyDialog");
+  let engineer = "";
+
+  function renderWho() {
+    const el = $("whoText");
+    if (!apiKey) el.textContent = "Not signed in";
+    else if (engineer) el.innerHTML = "Signed in as <strong>" + esc(engineer) + "</strong>";
+    else if (catalogError) el.textContent = "Key saved (not verified)";
+    else el.textContent = "Checking key…";
+  }
+
+  function openKeyDialog(error) {
+    $("keyInput").value = "";
+    setMsg($("keyMsg"), error ? "err" : "", error ? esc(error) : "");
+    $("keyCancel").hidden = !apiKey;
+    $("keyForget").hidden = !apiKey;
+    if (!keyDialog.open) keyDialog.showModal();
+    $("keyInput").focus();
+  }
+
+  keyDialog.addEventListener("cancel", (e) => { if (!apiKey) e.preventDefault(); });
+  $("keyCancel").addEventListener("click", () => keyDialog.close());
+  $("keyForget").addEventListener("click", () => {
+    apiKey = "";
+    engineer = "";
+    store.del(KEY_STORE);
+    resetCatalog();
+    renderWho();
+    openKeyDialog();
+  });
+  $("keyForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const v = $("keyInput").value.trim();
+    if (!v) { setMsg($("keyMsg"), "err", "Enter your API key."); return; }
+    apiKey = v;
+    store.set(KEY_STORE, v);
+    $("keyInput").value = "";
+    keyDialog.close();
+    engineer = "";
+    resetCatalog();
+    renderWho();
+    loadCatalog(true).catch(() => {});
+  });
+  $("changeKeyBtn").addEventListener("click", () => openKeyDialog());
+
+  // ---------- catalog (cached in memory for the session) ----------
+  let catalog = null;          // { engineer, lists: [...] }
+  let catalogPromise = null;
+  let catalogError = null;
+  let catalogStarted = 0;
+  let catalogTimer = null;
+
+  function resetCatalog() {
+    catalog = null;
+    catalogPromise = null;
+    catalogError = null;
+    fillDropdowns();
+    renderCatalog();
+  }
+
+  function loadCatalog(force) {
+    if (!apiKey) return Promise.reject(new ApiError("No API key set.", 0));
+    if (catalog && !force) return Promise.resolve(catalog);
+    if (catalogPromise) return catalogPromise;
+    catalogError = null;
+    catalogStarted = Date.now();
+    const p = api("/catalog")
+      .then((res) => res.json())
+      .then((data) => {
+        if (p !== catalogPromise) return data; // superseded by a key change
+        catalog = { engineer: data.engineer || "", lists: Array.isArray(data.lists) ? data.lists : [] };
+        engineer = catalog.engineer;
+        return catalog;
+      })
+      .catch((err) => {
+        if (p === catalogPromise) catalogError = err;
+        throw err;
+      })
+      .finally(() => {
+        if (p !== catalogPromise) return;
+        catalogPromise = null;
+        clearInterval(catalogTimer);
+        renderWho();
+        fillDropdowns();
+        renderCatalog();
+      });
+    catalogPromise = p;
+    clearInterval(catalogTimer);
+    catalogTimer = setInterval(renderCatalogLoading, 1000);
+    fillDropdowns();
+    renderCatalog();
+    return p;
+  }
+
+  document.querySelectorAll("[data-refresh-catalog]").forEach((b) =>
+    b.addEventListener("click", () => loadCatalog(true).catch(() => {})));
+
+  function clients() {
+    if (!catalog) return [];
+    return [...new Set(catalog.lists.map((l) => l.client).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  }
+  function listsFor(client) {
+    if (!catalog || !client) return [];
+    return [...new Set(catalog.lists.filter((l) => l.client === client).map((l) => l.list).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  }
+
+  function option(value, text, disabled) {
+    const o = document.createElement("option");
+    o.value = value;
+    o.textContent = text;
+    if (disabled) o.disabled = true;
+    return o;
+  }
+
+  function fillDropdowns() {
+    const loading = !!catalogPromise;
+    const cs = clients();
+    document.querySelectorAll("select[data-clients]").forEach((sel) => {
+      const prev = sel.value;
+      const allowNew = sel.hasAttribute("data-allow-new");
+      sel.replaceChildren();
+      if (loading && !catalog) sel.appendChild(option("", "Loading clients…", true));
+      else if (catalogError && !catalog) sel.appendChild(option("", "Could not load clients", true));
+      else sel.appendChild(option("", cs.length ? "Select a client…" : "No clients yet", true));
+      cs.forEach((c) => sel.appendChild(option(c, c)));
+      if (allowNew) sel.appendChild(option(NEW_CLIENT, "New client…"));
+      sel.value = [...sel.options].some((o) => o.value === prev && !o.disabled) ? prev : "";
+      if (!sel.value) sel.selectedIndex = 0;
+    });
+    document.querySelectorAll("[data-refresh-catalog]").forEach((b) => setBusy(b, loading));
+    onUploadClientChange();
+    fillPullLists();
+  }
+
+  // ---------- catalog table ----------
+  const CAT_COLS = [
+    { key: "client", label: "Client" },
+    { key: "list", label: "List", wrap: true },
+    { key: "source", label: "Source" },
+    { key: "leads", label: "Leads", num: true },
+    { key: "sendable_emails", label: "Sendable emails", num: true },
+    { key: "with_linkedin", label: "With LinkedIn", num: true },
+    { key: "last_updated", label: "Last updated", date: true },
+  ];
+  let sortKey = "client";
+  let sortDir = 1;
+
+  function renderCatalogLoading() {
+    const el = document.querySelector("#catBody .elapsed");
+    if (el) el.textContent = Math.round((Date.now() - catalogStarted) / 1000) + "s";
+  }
+
+  function fmtDate(v) {
+    if (!v) return "";
+    const d = new Date(v);
+    return isNaN(d) ? String(v) : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  }
+
+  function renderCatalog() {
+    const body = $("catBody");
+    const msg = $("catMsg");
+    if (!apiKey) { setMsg(msg, "info", "Enter your API key to load the catalog."); body.replaceChildren(); return; }
+    if (catalogError) setMsg(msg, "err", "<strong>Could not load catalog:</strong> " + esc(catalogError.message));
+    else setMsg(msg, "", "");
+
+    const loadingEl = () => {
+      const d = document.createElement("div");
+      d.className = "loading";
+      d.innerHTML = '<span class="spinner"></span><span>' + (catalog ? "Refreshing catalog" : "Loading catalog") +
+        '… <span class="elapsed">0s</span><br><span class="hint">This usually takes about 30 seconds.</span></span>';
+      return d;
+    };
+    if (!catalog) {
+      body.replaceChildren(...(catalogPromise ? [loadingEl()] : []));
+      renderCatalogLoading();
+      return;
+    }
+
+    const q = $("catSearch").value.trim().toLowerCase();
+    const rows = catalog.lists.filter((r) =>
+      !q || [r.client, r.list, r.source].some((v) => String(v ?? "").toLowerCase().includes(q)));
+    const col = CAT_COLS.find((c) => c.key === sortKey);
+    rows.sort((a, b) => {
+      let x = a[sortKey], y = b[sortKey];
+      if (col.num) { x = Number(x) || 0; y = Number(y) || 0; return (x - y) * sortDir; }
+      if (col.date) { x = x ? Date.parse(x) || 0 : 0; y = y ? Date.parse(y) || 0 : 0; return (x - y) * sortDir; }
+      return String(x ?? "").localeCompare(String(y ?? ""), undefined, { sensitivity: "base", numeric: true }) * sortDir;
+    });
+
+    const frag = document.createDocumentFragment();
+    if (catalogPromise) frag.appendChild(loadingEl());
+    const count = document.createElement("p");
+    count.className = "count";
+    const total = catalog.lists.length;
+    const leads = rows.reduce((s, r) => s + (Number(r.leads) || 0), 0);
+    const plural = (n, w) => `${fmt(n)} ${w}${n === 1 ? "" : "s"}`;
+    count.textContent = (rows.length === total ? plural(total, "list") : `${fmt(rows.length)} of ${plural(total, "list")}`) +
+      ` · ${plural(leads, "lead")}`;
+    count.style.margin = "14px 0 0";
+    frag.appendChild(count);
+
+    const wrap = document.createElement("div");
+    wrap.className = "table-wrap";
+    const table = document.createElement("table");
+    table.id = "catalogTable";
+    const thead = table.createTHead().insertRow();
+    CAT_COLS.forEach((c) => {
+      const th = document.createElement("th");
+      th.className = "sortable" + (c.num ? " num" : "");
+      th.tabIndex = 0;
+      th.scope = "col";
+      th.setAttribute("aria-sort", c.key === sortKey ? (sortDir > 0 ? "ascending" : "descending") : "none");
+      th.innerHTML = esc(c.label) + '<span class="arrow">' + (c.key === sortKey ? (sortDir > 0 ? "▲" : "▼") : "↕") + "</span>";
+      const go = () => {
+        if (sortKey === c.key) sortDir = -sortDir;
+        else { sortKey = c.key; sortDir = c.num || c.date ? -1 : 1; }
+        renderCatalog();
+      };
+      th.addEventListener("click", go);
+      th.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+      thead.appendChild(th);
+    });
+    const tb = table.createTBody();
+    if (!rows.length) {
+      const td = tb.insertRow().insertCell();
+      td.colSpan = CAT_COLS.length;
+      td.className = "muted";
+      td.textContent = q ? "No lists match your search." : "No lists yet.";
+    }
+    rows.forEach((r) => {
+      const tr = tb.insertRow();
+      CAT_COLS.forEach((c) => {
+        const td = tr.insertCell();
+        if (c.num) { td.className = "num"; td.textContent = fmt(Number(r[c.key]) || 0); }
+        else if (c.date) { td.textContent = fmtDate(r[c.key]); td.title = r[c.key] || ""; }
+        else { td.textContent = r[c.key] ?? ""; if (c.wrap) td.className = "wrapok"; }
+      });
+    });
+    wrap.appendChild(table);
+    frag.appendChild(wrap);
+    body.replaceChildren(frag);
+    renderCatalogLoading();
+  }
+  $("catSearch").addEventListener("input", renderCatalog);
+
+  // ---------- CSV splitting ----------
+  // Splits CSV text into records, honouring quoted fields that contain newlines.
+  function csvRecords(text) {
+    const out = [];
+    let start = 0, inQ = false;
+    const n = text.length;
+    for (let i = 0; i < n; i++) {
+      const ch = text.charCodeAt(i);
+      if (ch === 34) inQ = !inQ;                     // "
+      else if (!inQ && (ch === 10 || ch === 13)) {   // \n or \r
+        out.push(text.slice(start, i));
+        if (ch === 13 && text.charCodeAt(i + 1) === 10) i++;
+        start = i + 1;
+      }
+    }
+    if (start < n) out.push(text.slice(start));
+    return out.filter((r) => r.trim() !== "");
+  }
+
+  async function readCsv(file) {
+    const text = (await file.text()).replace(/^﻿/, "");
+    const recs = csvRecords(text);
+    return { header: recs[0] || "", rows: recs.slice(1) };
+  }
+
+  // ---------- upload ----------
+  const upState = { file: null, parsed: null };
+  let upJob = null; // { parts: Blob[], names: string[], client, list, next, summary }
+
+  $("upFile").addEventListener("change", async () => {
+    const f = $("upFile").files[0];
+    upState.file = f || null;
+    upState.parsed = null;
+    upJob = null;
+    $("upResume").hidden = true;
+    $("upFileInfo").textContent = "";
+    if (!f) return;
+    $("upFileInfo").textContent = "Counting rows…";
+    try {
+      const parsed = await readCsv(f);
+      if (upState.file !== f) return;
+      upState.parsed = parsed;
+      const n = parsed.rows.length;
+      const parts = Math.ceil(n / MAX_ROWS);
+      $("upFileInfo").textContent = `${fmt(n)} rows` +
+        (parts > 1 ? ` · will upload in ${parts} parts of up to ${fmt(MAX_ROWS)} rows` : "");
+    } catch {
+      $("upFileInfo").textContent = "Could not read this file.";
+    }
+  });
+
+  function onUploadClientChange() {
+    const isNew = $("upClient").value === NEW_CLIENT;
+    $("upClientNew").hidden = !isNew;
+    const dl = $("upListSuggest");
+    dl.replaceChildren();
+    if (!isNew) listsFor($("upClient").value).forEach((l) => dl.appendChild(option(l, l)));
+  }
+  $("upClient").addEventListener("change", () => {
+    onUploadClientChange();
+    if ($("upClient").value === NEW_CLIENT) $("upClientNew").focus();
+  });
+
+  function mergeSummary(acc, s, nested) {
+    for (const [k, v] of Object.entries(s || {})) {
+      if (k === "ok" && !nested) continue;
+      if (typeof v === "number") acc[k] = (typeof acc[k] === "number" ? acc[k] : 0) + v;
+      else if (Array.isArray(v)) acc[k] = [...new Set([...(Array.isArray(acc[k]) ? acc[k] : []), ...v])];
+      else if (v && typeof v === "object") acc[k] = mergeSummary(acc[k] && typeof acc[k] === "object" ? acc[k] : {}, v, true);
+      else acc[k] = v;
+    }
+    return acc;
+  }
+
+  const SUMMARY_KEYS = [
+    ["new_leads", "New leads"],
+    ["matched_existing_leads", "Matched existing leads"],
+    ["existing_leads_now_sendable", "Existing leads now sendable"],
+    ["extra_emails_saved_as_alternates", "Extra emails saved as alternates"],
+    ["generic_emails_saved", "Generic emails saved"],
+    ["duplicate_rows_in_file", "Duplicate rows in file"],
+    ["skipped_no_linkedin_or_email", "Skipped (no LinkedIn or email)"],
+    ["emails_by_result", "Emails by result"],
+    ["ignored_columns", "Ignored columns"],
+  ];
+  const humanize = (k) => k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+
+  function renderSummary(s, partsDone, partsTotal) {
+    const table = document.createElement("table");
+    table.className = "summary";
+    const h = table.createTHead().insertRow();
+    ["Result", partsTotal > 1 ? `Total (${partsDone} of ${partsTotal} parts)` : "Count"].forEach((t, i) => {
+      const th = document.createElement("th");
+      th.textContent = t;
+      if (i) th.className = "num";
+      h.appendChild(th);
+    });
+    const tb = table.createTBody();
+    const addRow = (label, value, sub) => {
+      const tr = tb.insertRow();
+      const a = tr.insertCell(); a.textContent = label; if (sub) a.className = "sub";
+      const b = tr.insertCell();
+      if (Array.isArray(value)) { b.textContent = value.length ? value.join(", ") : "None"; b.style.textAlign = "right"; if (!value.length) b.className = "muted num"; }
+      else if (value && typeof value === "object") { b.className = "num muted"; b.textContent = fmt(Object.values(value).reduce((x, y) => x + (Number(y) || 0), 0)); }
+      else { b.className = "num"; b.textContent = fmt(value ?? 0); }
+      return tr;
+    };
+    const keys = SUMMARY_KEYS.map(([k]) => k);
+    const extra = Object.keys(s).filter((k) => !keys.includes(k)).map((k) => [k, humanize(k)]);
+    [...SUMMARY_KEYS, ...extra].forEach(([k, label]) => {
+      const v = s[k];
+      if (k === "emails_by_result") {
+        const obj = v && typeof v === "object" ? v : {};
+        addRow(label, obj);
+        const entries = Object.entries(obj).sort((a, b) => (Number(b[1]) || 0) - (Number(a[1]) || 0));
+        if (!entries.length) addRow("none", 0, true);
+        entries.forEach(([rk, rv]) => addRow(rk, rv, true));
+      } else if (k === "ignored_columns") {
+        addRow(label, Array.isArray(v) ? v : []);
+      } else if (v && typeof v === "object" && !Array.isArray(v)) {
+        addRow(label, v);
+        Object.entries(v).forEach(([rk, rv]) => addRow(rk, rv, true));
+      } else {
+        addRow(label, v);
+      }
+    });
+    const wrap = document.createElement("div");
+    wrap.className = "table-wrap";
+    wrap.appendChild(table);
+    $("upResult").replaceChildren(wrap);
+  }
+
+  function setProgress(done, total, label, indeterminate) {
+    const p = $("upProgress");
+    p.hidden = false;
+    const bar = p.querySelector(".bar");
+    bar.classList.toggle("indeterminate", !!indeterminate);
+    bar.firstElementChild.style.width = indeterminate ? "" : Math.round((done / total) * 100) + "%";
+    p.querySelector(".label").textContent = label;
+  }
+
+  async function runUploadJob() {
+    const job = upJob;
+    const btns = [$("upBtn"), $("upResume")];
+    btns.forEach((b) => setBusy(b, true));
+    $("upResume").hidden = true;
+    const total = job.parts.length;
+    setMsg($("upMsg"), "", "");
+    try {
+      while (job.next < total) {
+        const i = job.next;
+        setProgress(i, total,
+          total > 1 ? `Uploading part ${i + 1} of ${total}…` : "Uploading…",
+          total === 1);
+        const fd = new FormData();
+        fd.append("file", job.parts[i], job.names[i]);
+        fd.append("client", job.client);
+        fd.append("list", job.list);
+        const res = await api("/upload", { method: "POST", body: fd });
+        const data = await res.json();
+        mergeSummary(job.summary, data);
+        job.next = i + 1;
+        renderSummary(job.summary, job.next, total);
+      }
+      setProgress(total, total, total > 1 ? `All ${total} parts uploaded.` : "Upload complete.");
+      setMsg($("upMsg"), "ok", `<strong>Uploaded</strong> ${fmt(job.rows)} rows to ${esc(job.client)} / ${esc(job.list)}.` +
+        (total > 1 ? " Duplicate rows are only detected within each part." : ""));
+      upJob = null;
+      if (!clients().includes(job.client) || !listsFor(job.client).includes(job.list)) {
+        loadCatalog(true).catch(() => {}); // new client or list: refresh dropdowns
+      }
+    } catch (err) {
+      const done = job.next;
+      let html = "<strong>Upload failed";
+      html += total > 1 ? ` on part ${done + 1} of ${total}:</strong> ` : ":</strong> ";
+      html += esc(err.message);
+      if (done > 0) html += `<br>${done === 1 ? "Part 1 was" : `Parts 1–${done} were`} saved; the table shows their totals. Use “Retry remaining parts” to continue from part ${done + 1}.`;
+      setMsg($("upMsg"), "err", html);
+      setProgress(done, total, total > 1 ? `${done} of ${total} parts uploaded.` : "Upload failed.");
+      $("upResume").hidden = false;
+    } finally {
+      btns.forEach((b) => setBusy(b, false));
+    }
+  }
+
+  $("uploadForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = $("upMsg");
+    const file = $("upFile").files[0];
+    const clientSel = $("upClient").value;
+    const client = (clientSel === NEW_CLIENT ? $("upClientNew").value : clientSel).trim();
+    const list = $("upList").value.trim();
+    if (!file) return setMsg(msg, "err", "Choose a CSV file.");
+    if (!client) return setMsg(msg, "err", clientSel === NEW_CLIENT ? "Enter the new client name." : "Choose a client.");
+    if (!list) return setMsg(msg, "err", "Enter a list name (audience - source - month).");
+
+    setBusy($("upBtn"), true);
+    $("upResult").replaceChildren();
+    try {
+      const parsed = upState.file === file && upState.parsed ? upState.parsed : await readCsv(file);
+      if (!parsed.header || !parsed.rows.length) { setMsg(msg, "err", "This CSV has no data rows."); return; }
+      const parts = [], names = [];
+      const base = file.name.replace(/\.csv$/i, "");
+      if (parsed.rows.length <= MAX_ROWS) {
+        parts.push(file);
+        names.push(file.name);
+      } else {
+        for (let i = 0; i < parsed.rows.length; i += MAX_ROWS) {
+          const chunk = parsed.rows.slice(i, i + MAX_ROWS);
+          parts.push(new Blob([parsed.header + "\n" + chunk.join("\n") + "\n"], { type: "text/csv" }));
+          names.push(`${base}-part${parts.length}.csv`);
+        }
+      }
+      upJob = { parts, names, client, list, next: 0, summary: {}, rows: parsed.rows.length };
+    } catch {
+      setMsg(msg, "err", "Could not read this file.");
+      return;
+    } finally {
+      setBusy($("upBtn"), false);
+    }
+    await runUploadJob();
+  });
+  $("upResume").addEventListener("click", () => { if (upJob) runUploadJob(); });
+
+  // ---------- pull by client ----------
+  function fillPullLists() {
+    const sel = $("pullList");
+    const prev = sel.value;
+    sel.replaceChildren(option("", "All lists"));
+    listsFor($("pullClient").value).forEach((l) => sel.appendChild(option(l, l)));
+    sel.value = [...sel.options].some((o) => o.value === prev) ? prev : "";
+  }
+  $("pullClient").addEventListener("change", fillPullLists);
+
+  $("pullForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = $("pullMsg");
+    const client = $("pullClient").value;
+    if (!client) return setMsg(msg, "err", "Choose a client.");
+    const params = new URLSearchParams({ client, type: $("pullType").value });
+    const list = $("pullList").value;
+    if (list) params.set("list", list);
+    const btn = $("pullBtn");
+    setBusy(btn, true);
+    setMsg(msg, "info", "Preparing CSV…");
+    try {
+      const res = await api("/pull?" + params.toString());
+      const blob = await res.blob();
+      const name = filenameFrom(res, `${client}_${params.get("type")}.csv`);
+      const rows = headerNum(res, "x-row-count");
+      saveBlob(blob, name);
+      setMsg(msg, rows === 0 ? "warn" : "ok",
+        `<strong>${rows == null ? "Downloaded" : fmt(rows) + " rows"}</strong> · saved as ${esc(name)}` +
+        (rows === 0 ? "<br>No leads matched this client, list and type." : ""));
+    } catch (err) {
+      setMsg(msg, "err", "<strong>Pull failed:</strong> " + esc(err.message));
+    } finally {
+      setBusy(btn, false);
+    }
+  });
+
+  // ---------- pull by domains ----------
+  $("domFile").addEventListener("change", () => {
+    $("domText").disabled = !!$("domFile").files[0];
+  });
+
+  $("domForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = $("domMsg");
+    const file = $("domFile").files[0];
+    const text = $("domText").value.trim();
+    if (!file && !text) return setMsg(msg, "err", "Choose a CSV of domains or paste some domains.");
+    const max = $("domMax").value.trim();
+    if (max && !(Number(max) >= 1 && Number.isInteger(Number(max)))) return setMsg(msg, "err", "Max per domain must be a whole number of 1 or more.");
+
+    const fd = new FormData();
+    if (file) fd.append("file", file, file.name);
+    else fd.append("domains", text);
+    fd.append("type", $("domType").value);
+    if (max) fd.append("max_per_domain", max);
+    fd.append("require_email", $("domLiOnly").checked ? "false" : "true");
+    fd.append("decision_makers_only", $("domAllTitles").checked ? "false" : "true");
+    const kw = $("domKeywords").value.split(",").map((s) => s.trim()).filter(Boolean).join(",");
+    if (kw) fd.append("title_keywords", kw);
+
+    const btn = $("domBtn");
+    setBusy(btn, true);
+    setMsg(msg, "info", "Matching domains…");
+    $("domStats").replaceChildren();
+    try {
+      const res = await api("/pull-domains", { method: "POST", body: fd });
+      const blob = await res.blob();
+      const name = filenameFrom(res, `domain_pull_${$("domType").value}.csv`);
+      const rows = headerNum(res, "x-row-count");
+      const matched = headerNum(res, "x-domains-matched");
+      const requested = headerNum(res, "x-domains-requested");
+      saveBlob(blob, name);
+      setMsg(msg, rows === 0 ? "warn" : "ok", `<strong>Downloaded</strong> ${esc(name)}` +
+        (rows === 0 ? "<br>No contacts matched. Try including LinkedIn-only contacts or all titles." : ""));
+      const stats = document.createElement("div");
+      stats.className = "stats";
+      const stat = (v, k) => `<div class="stat"><div class="v">${v}</div><div class="k">${esc(k)}</div></div>`;
+      stats.innerHTML =
+        (matched != null && requested != null ? stat(`${fmt(matched)} <span class="muted" style="font-size:15px;font-weight:500">of ${fmt(requested)}</span>`, "domains matched") : "") +
+        (rows != null ? stat(fmt(rows), "rows") : "");
+      $("domStats").replaceChildren(stats);
+    } catch (err) {
+      setMsg(msg, "err", "<strong>Pull failed:</strong> " + esc(err.message));
+    } finally {
+      setBusy(btn, false);
+    }
+  });
+
+  // ---------- boot ----------
+  const startTab = store.get("gtm_tab");
+  showTab(tabs.some((t) => t.dataset.tab === startTab) ? startTab : "upload");
+  renderWho();
+  fillDropdowns();
+  renderCatalog();
+  if (apiKey) loadCatalog(false).catch(() => {});
+  else openKeyDialog();
+})();
+</script>
+</body>
+</html>
